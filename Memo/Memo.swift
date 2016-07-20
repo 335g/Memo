@@ -11,12 +11,12 @@ public struct Memo<T> {
 
 	/// Constructs a `Memo` which lazily evaluates the passed function.
 	public init(unevaluated: () -> T) {
-		self.init(state: .Unevaluated(unevaluated))
+		self.init(state: .unevaluated(unevaluated))
 	}
 
 	/// Constructs a `Memo` wrapping the already-evaluated argument.
 	public init(evaluated: T) {
-		self.init(state: .Evaluated(evaluated))
+		self.init(state: .evaluated(evaluated))
 	}
 
 
@@ -31,7 +31,7 @@ public struct Memo<T> {
 	// MARK: API
 
 	/// Returns a new `Memo` which lazily memoizes the result of applying `f` to the receiver’s value.
-	public func map<U>(f: T -> U) -> Memo<U> {
+	public func map<U>(_ f: (T) -> U) -> Memo<U> {
 		return Memo<U> { f(self.value) }
 	}
 
@@ -71,17 +71,17 @@ public func != <T: Equatable> (lhs: Memo<T>, rhs: Memo<T>) -> Bool {
 
 /// Private state for memoization.
 private enum MemoState<T> {
-	case Evaluated(T)
-	case Unevaluated(() -> T)
+	case evaluated(T)
+	case unevaluated(() -> T)
 
 	/// Return the value, computing and memoizing it first if necessary.
 	mutating func value() -> T {
 		switch self {
-		case let Evaluated(x):
+		case let evaluated(x):
 			return x
-		case let Unevaluated(f):
+		case let unevaluated(f):
 			let value = f()
-			self = Evaluated(value)
+			self = evaluated(value)
 			return value
 		}
 	}
